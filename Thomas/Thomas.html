@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <title>☀☀Thomas</title>
+<style>
+
+body {
+  overflow: hidden
+}
+#info {
+  position: absolute;
+
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  color: #ffff00
+}
+
+</style>
+</head>
+
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.113.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.113.0/examples/js/loaders/MTLLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.113.0/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.113.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+<div id="info">Thomas<br/>
+	<br/>
+</div>
+
+<script>
+
+var renderer, camera, controls, scene;
+var angle;
+var train;
+var flag=0;
+var dis=0;
+var train= new THREE.Object3D();
+var road = [];
+init();
+animate();
+
+function init() {
+	renderer = new THREE.WebGLRenderer({
+	  antialias: true
+	});
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setClearColor(0x888888);
+	document.body.appendChild(renderer.domElement);
+	camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+	camera.position.z = 50;  // important
+
+	controls = new THREE.OrbitControls(camera, renderer.domElement);
+	scene = new THREE.Scene();
+
+//	let gridXZ = new THREE.GridHelper(200, 10, 'red', 'white');
+	//scene.add(gridXZ);
+
+	//let axes = new THREE.AxisHelper (100);
+	//scene.add (axes);
+
+  ///////////
+	var texture = new THREE.TextureLoader().load('https://i.imgur.com/X3N2WuS.png');
+  	texture.wrapS = THREE.RepeatWrapping;
+  	texture.wrapT = THREE.RepeatWrapping;
+   texture.repeat.set(10, 10);
+   var floor = new THREE.PlaneGeometry(1000,1000,1,1);
+   mesh = new THREE.Mesh(floor,
+   new THREE.MeshBasicMaterial({
+     map: texture,
+     side: THREE.DoubleSide
+   }));
+   mesh.rotation.x=Math.PI/2;
+   scene.add (mesh);
+  ///////////
+
+	//train = new THREE.Group();
+  let geometry = new THREE.BoxGeometry (40, 10, 20)
+  let material = new THREE.MeshNormalMaterial()
+  mesh = new THREE.Mesh (geometry, material)
+  //scene.add (mesh)
+
+	//let block = new THREE.Mesh (new THREE.BoxGeometry(5,20,5), new THREE.MeshNormalMaterial());
+  //block.position.y = 10;
+  //block.position.x = 15
+  //train.add (block);
+  //train.add (mesh);
+
+  //scene.add (train);
+  // AmbientLight
+  ///////
+  var pointLight = new THREE.PointLight(0xffffff);
+    pointLight.position.set(0, 1000, 1000);
+    scene.add(pointLight);
+    var directionalLight = new THREE.DirectionalLight(0xffffff);
+    directionalLight.position.set(0, 1, 1).normalize;
+    scene.add(directionalLight);
+  var ambientLight = new THREE.AmbientLight(0x555555);
+    scene.add(ambientLight);
+  //////////model
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      //console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('Thomas/');
+  mtlLoader.load('materials.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('Thomas/');
+    objLoader.load('model.obj', function(object) {
+      object.rotation.y= Math.PI;
+      train.add(unitize (object, 40));
+      //train.rotation.y= Math.PI;
+      scene.add(train);
+
+      object.traverse (
+        function(mesh) {
+          if (mesh instanceof THREE.Mesh) {
+            mesh.material.side = THREE.DoubleSide;
+          }
+      });
+    }, onProgress, onError);
+  });
+
+	angle = 0;
+  buildRoad();
+}
+
+function animate() {
+  controls.update();
+  renderer.render (scene, camera);
+if(flag==0){
+//if(angle>5*Math.PI/2)angle=0;
+	angle = angle + 0.01;  // radian
+	train.rotation.y = angle + Math.PI/2;
+  //console.log (angle)
+  if(train.rotation.y>=2*Math.PI+Math.PI/2){
+  	angle=0;
+  }
+  train.position.set (90*Math.cos(angle)-dis, 2, -90*Math.sin(angle));
+  if(train.rotation.y%(2*Math.PI) >= Math.PI){
+  	flag=1;
+  }
+}
+//////////
+	if(flag==1){
+  	train.position.set (90*Math.cos(angle)-dis, 2, -90*Math.sin(angle));
+    dis=dis+1;
+    //console.log (dis)
+    if(dis>= 60)flag =2;
+  }
+  //////////////
+ if(flag==2){
+	angle = angle + 0.01;  // radian
+	train.rotation.y = angle + Math.PI/2;
+  //console.log (angle)
+
+  train.position.set (90*Math.cos(angle)-dis, 2, -90*Math.sin(angle));
+  if(train.rotation.y>= 2*Math.PI){
+  	flag=3;
+  }
+}
+//console.log(train.position);
+//console.log(dis);
+if(flag==3){
+  	train.position.set (90*Math.cos(angle)-dis, 2, -90*Math.sin(angle));
+    dis=dis-1;
+   // console.log (dis)
+    if(dis<= 0){
+    	flag =0;
+      dis = 0;
+     }
+  }
+//console.log (flag);
+  requestAnimationFrame (animate);
+}
+function unitize (object, targetSize) {
+  // find bounding box of 'object'
+  var box3 = new THREE.Box3();
+  box3.setFromObject (object);
+  var size = new THREE.Vector3();
+  size.subVectors (box3.max, box3.min);
+  var center = new THREE.Vector3();
+  center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+  console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+  console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+  // uniform scaling according to objSize
+  var objSize = Math.max (size.x, size.y, size.z);
+  var scaleSet = targetSize/objSize;
+  var theObject =  new THREE.Object3D();
+  theObject.add (object);
+  object.scale.set (scaleSet, scaleSet, scaleSet);
+  object.position.set (-center.x*scaleSet, -center.y*scaleSet + size.y/2*scaleSet, -center.z*scaleSet);
+  theObject.rotation.y = Math.PI/2; // fix car direction
+  return theObject;
+}
+function buildRoad(){
+	var roadMat = new THREE.MeshBasicMaterial({
+    map: new THREE.TextureLoader().load('https://i.imgur.com/In8a9dc.jpg')
+  });
+
+
+	road[0] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[0].position.set(90, 1, 0);
+
+  road[1] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[1].position.set(-150, 1, 0);
+
+  road[2] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[2].position.set(90*Math.cos(Math.PI/12), 1, -90*Math.sin(Math.PI/12));
+  road[2].rotation.y=Math.PI/10;
+
+  road[3] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[3].position.set(90*Math.cos(Math.PI/6), 1, -90*Math.sin(Math.PI/6));
+  road[3].rotation.y=Math.PI/6;
+/////////直的
+  road[4] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[4].position.set(0, 1, 90);
+  road[4].rotation.y=Math.PI/2;
+
+  road[5] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[5].position.set(0, 1, -90);
+  road[5].rotation.y=Math.PI/2;
+
+  road[6] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[6].position.set(-20, 1, -90);
+  road[6].rotation.y=Math.PI/2;
+
+  road[7] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[7].position.set(-40, 1, -90);
+  road[7].rotation.y=Math.PI/2;
+
+  road[8] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[8].position.set(-60, 1, -90);
+  road[8].rotation.y=Math.PI/2;
+
+  road[9] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[9].position.set(-20, 1, 90);
+  road[9].rotation.y=Math.PI/2;
+
+  road[10] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[10].position.set(-40, 1, 90);
+  road[10].rotation.y=Math.PI/2;
+
+  road[11] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[11].position.set(-60, 1, 90);
+  road[11].rotation.y=Math.PI/2;
+  /////////
+
+  road[12] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[12].position.set(90*Math.cos(Math.PI/4), 1, -90*Math.sin(Math.PI/4));
+  road[12].rotation.y=Math.PI/4;
+
+  road[13] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[13].position.set(90*Math.cos(Math.PI/3), 1, -90*Math.sin(Math.PI/3));
+  road[13].rotation.y=Math.PI/3;
+
+  road[14] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[14].position.set(90*Math.cos(Math.PI/2.4), 1, -90*Math.sin(Math.PI/2.4));
+  road[14].rotation.y=Math.PI/2.4;
+///////////////////左上
+road[15] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+road[15].position.set(90*Math.cos(Math.PI/2+Math.PI/12)-60, 1, -90*Math.sin(Math.PI/2+Math.PI/12));
+road[15].rotation.y=Math.PI/2+Math.PI/12;
+
+road[16] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+road[16].position.set(90*Math.cos(Math.PI/2+Math.PI/6)-60, 1, -90*Math.sin(Math.PI/2+Math.PI/6));
+road[16].rotation.y=Math.PI/2+Math.PI/6;
+
+  road[17] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[17].position.set(90*Math.cos(Math.PI/2+Math.PI/4)-60, 1, -90*Math.sin(Math.PI/2+Math.PI/4));
+  road[17].rotation.y=Math.PI/2+Math.PI/4;
+
+  road[18] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[18].position.set(90*Math.cos(Math.PI/2+Math.PI/3)-60, 1, -90*Math.sin(Math.PI/2+Math.PI/3));
+  road[18].rotation.y=Math.PI/2+Math.PI/3;
+
+  road[19] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[19].position.set(90*Math.cos(Math.PI/2+Math.PI/2.4)-60, 1, -90*Math.sin(Math.PI/2+Math.PI/2.4));
+  road[19].rotation.y=Math.PI/2+Math.PI/2.4;
+///////////////////左下
+road[20] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+road[20].position.set(90*Math.cos(Math.PI+Math.PI/12)-60, 1, -90*Math.sin(Math.PI+Math.PI/12));
+road[20].rotation.y=Math.PI+Math.PI/12;
+
+road[21] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+road[21].position.set(90*Math.cos(Math.PI+Math.PI/6)-60, 1, -90*Math.sin(Math.PI+Math.PI/6));
+road[21].rotation.y=Math.PI+Math.PI/6;
+
+  road[22] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[22].position.set(90*Math.cos(Math.PI+Math.PI/4)-60, 1, -90*Math.sin(Math.PI+Math.PI/4));
+  road[22].rotation.y=Math.PI+Math.PI/4;
+
+  road[23] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[23].position.set(90*Math.cos(Math.PI+Math.PI/3)-60, 1, -90*Math.sin(Math.PI+Math.PI/3));
+  road[23].rotation.y=Math.PI+Math.PI/3;
+
+  road[29] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[29].position.set(90*Math.cos(Math.PI+Math.PI/2.4)-60, 1, -90*Math.sin(Math.PI+Math.PI/2.4));
+  road[29].rotation.y=Math.PI+Math.PI/2.4;
+  ///////////右下
+  road[24] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[24].position.set(90*Math.cos(3*Math.PI/2+Math.PI/12), 1, -90*Math.sin(3*Math.PI/2+Math.PI/12));
+  road[24].rotation.y=3*Math.PI/2+Math.PI/12;
+
+  road[25] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+  road[25].position.set(90*Math.cos(3*Math.PI/2+Math.PI/6), 1, -90*Math.sin(3*Math.PI/2+Math.PI/6));
+  road[25].rotation.y=3*Math.PI/2+Math.PI/6;
+
+    road[26] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+    road[26].position.set(90*Math.cos(3*Math.PI/2+Math.PI/4), 1, -90*Math.sin(3*Math.PI/2+Math.PI/4));
+    road[26].rotation.y=3*Math.PI/2+Math.PI/4;
+
+    road[27] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+    road[27].position.set(90*Math.cos(3*Math.PI/2+Math.PI/3), 1, -90*Math.sin(3*Math.PI/2+Math.PI/3));
+    road[27].rotation.y=3*Math.PI/2+Math.PI/3;
+
+    road[28] = new THREE.Mesh(new THREE.BoxGeometry(40, 2, 10), roadMat.clone());
+    road[28].position.set(90*Math.cos(3*Math.PI/2+Math.PI/2.4), 1, -90*Math.sin(3*Math.PI/2+Math.PI/2.4));
+    road[28].rotation.y=3*Math.PI/2+Math.PI/2.4;
+
+  for(var index in road){
+  	scene.add(road[index]);
+  }
+}
+
+
+
+
+</script>
+</body>
+
+</html>

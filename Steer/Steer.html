@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <title>☀☀Steer</title>
+<link rel="stylesheet" type="text/css" href="mystyle.css">
+</head>
+
+<body>
+<div id="info">Agent (Seek, Arrival, Collision)<br>
+<p id="message"></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.113.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.113.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<script src="./agent0.js"></script>
+<script src="./obstacle.js"></script>
+<script src="./target.js"></script>
+
+<!-- must be before main.js -->
+<script src="./scene.js"></script>
+<script src="./threemain.js"></script>
+
+<script src="./main.js"></script>
+</body>
+<div id="info"><br><br><br>Time <span id="time">00:00</span><br></div>
+</html>

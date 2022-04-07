@@ -1,0 +1,69 @@
+首次使用：
+0. 下載並安裝  git
+
+在檔案總管，移到『要版本控制的目錄』，按右鍵啟動 git bash
+
+1. 鍵入email & name (首次 git user才需要)
+   git config --global user.email "myemail@gmail.com"
+   git config --global user.name "naidy"
+
+2. 到 github.com; sign up
+
+=====================================================
+第一次建立 repository
+1. git init
+（建立repository; 產生 .git/ 資料夾）
+
+2. git add .
+（將現有資料夾 (.)中所有檔案加入staging area）
+
+3. git commit -m "comments ..."
+（加入這次commit 的註解）
+
+4. {到你的 github 產生對應的 repository，名字要與local端的資料夾一樣}
+  （並將 repository的url 複製）
+
+5. git remote add origin <repository url>
+   (local端將對應到 github端的repository)
+
+6. git push -u origin master
+  （將所有master branch的內容傳到github上）
+  （需要 login/password)
+
+（gh-pages branch也要做相同的事）
+
+7. git checkout -b gh-pages
+  checkout 並產生(-b) gh-pages branch)
+（這時，會轉到gh-pages branch)
+
+8. git push origin gh-pages
+（將所有的內容傳到github的gh-pages branch上)
+（這時，username.github.io/repo 上，會有你的內容）
+（可編輯一份 index.html, with proper links to other files）
+9. git checkout master
+（好習慣：做完，回到master branch)
+
+=============================================================
+往後的內容更新
+
+{從 master branch開始}
+
+1. git add .
+2. git commit -m “your comment …”
+3. git push -u origin master
+
+（gh-pages 也要更新）
+
+4. git checkout gh-pages
+5. git merge master (更新時，用這個指令）
+6. git push origin gh-pages
+
+（回到master branch)
+7. git checkout master
+
+================================================================
+萬不得已 砍掉重練 （to redo the repository）
+
+{delete the repository on github}
+
+rm -rf .git { delete local repo }

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <title>☀☀Keyframe</title>
+<style>
+
+#info {
+  position: absolute;
+  top: 0%;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  color: #ffff00
+}
+
+body {
+  overflow: hidden;
+}
+
+
+</style>
+</head>
+
+<body>
+  <div id="info">Keyframe
+  <br/>
+  <p id='velprint'>
+  </p>
+  </div>
+  <script src="https://threejs.org/build/three.min.js"></script>
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
+  <script src="https://threejs.org/examples/js/misc/Gyroscope.js"></script>
+
+<audio id="soundtrack" autoplay loop style="display:none">
+<source src="sound/cut2.mp3" type='audio/mp3'>
+
+</audio>
+
+
+<script>
+
+
+
+
+var scene, renderer, camera;
+var body, lowerArm, upperArm;
+var lowerArm2, upperArm2;
+var lowerLeg, upperLeg;
+var lowerLeg2, upperLeg2;
+var head;
+
+var sZ, sX, sY, eX, posY,posX;
+var sZ2, sX2, sY2, eX2;
+var lZ, lX, lY, lX;
+var lZ2, lX2, lY2, lX2;
+var soundTrack;
+var gcontrols = {
+	sZ: 0.01,  // s for shoulder
+	sX: 0.02,
+	sY: 0.01,
+	eX: 0.03,  // e for elbow
+  sZ2: 0.01,  // s for shoulder
+	sX2: 0.02,
+	sY2: 0.01,
+	eX2: 0.03,  // e for elbow
+
+  lZ: 0.01,  // l for leg
+	lX: 0.02,
+	lY: 0.01,
+	kX: 0.03,  // k for knee
+
+  lZ2: 0.01,  // l for leg
+	lX2: 0.02,
+	lY2: 0.01,
+	kX2: 0.03,  // k for knee
+
+	posY: 0.01,
+  posX: 0.01
+};
+
+///////////////////////
+
+var p0 = {
+				sZ: 0.01,  // s for shoulder
+	sX: 0.02,
+	sY: 0.01,
+	eX: 0.03,  // e for elbow
+  sZ2: 0.01,  // s for shoulder
+	sX2: 0.02,
+	sY2: 0.01,
+	eX2: 0.03,  // e for elbow
+
+   lZ: 0.01,  // l for leg
+	lX: 0.02,
+	lY: 0.01,
+	kX: 0.03,  // k for knee
+
+  lZ2: 0.01,  // l for leg
+	lX2: 0.02,
+	lY2: 0.01,
+	kX2: 0.03,  // k for knee
+
+        posY: 0.01,
+        posX: 0.01,
+
+};
+var p1 = {
+				sZ: 0.01,  // s for shoulder
+	sX: -1.258,
+	sY: -0.009,
+	eX: -1.504,  // e for elbow
+  sZ2: -0.148,  // s for shoulder
+	sX2: -0.495,
+	sY2: -0.703,
+	eX2: -1.179,  // e for elbow
+
+   lZ: 0.01,  // l for leg
+	lX: -1.57,
+	lY: 0.01,
+	kX: 1.528,  // k for knee
+
+  lZ2: 0.01,  // l for leg
+	lX2: 0.02,
+	lY2: 0.01,
+	kX2: 0.03,  // k for knee
+        posY: 0.01,
+        posX: 0.01,
+
+};
+var p2 = {
+				sZ: 0.01,  // s for shoulder
+	sX: 1.258,
+	sY: -0.009,
+	eX: -1.504,  // e for elbow
+  sZ2: -0.148,  // s for shoulder
+	sX2: 0.495,
+	sY2: -0.703,
+	eX2: -1.179,  // e for elbow
+
+   lZ: 0.01,  // l for leg
+	lX: 0.02,
+	lY: 0.01,
+	kX: 0.03,  // k for knee
+
+  lZ2: 0.01,  // l for leg
+	lX2: 1.27,
+	lY2: 0.01,
+	kX2: 1.528,  // k for knee
+        posY: 0.01,
+        posX: 0.01,
+
+};
+var p3 = {
+				sZ: -1.534,  // s for shoulder
+	sX: 0.02,
+	sY: 0.01,
+	eX: 0.03,  // e for elbow
+  sZ2: 0.01,  // s for shoulder
+	sX2: -1.5,
+	sY2: -0.294,
+	eX2: -1.339,  // e for elbow
+
+  lZ: -0.506,  // l for leg
+	lX: 0.203,
+	lY: 0.203,
+	kX: 0.03,  // k for knee
+
+  lZ2: 0.01,  // l for leg
+	lX2: 0.02,
+	lY2: 0.01,
+	kX2: 0.03,  // k for knee
+
+	posY: 0.01,
+  posX: -20
+
+};
+
+var p4 = {
+				sZ: 0.01,  // s for shoulder
+	sX: -1.5,
+	sY: 0.294,
+	eX:- 1.339,  // e for elbow
+  sZ2: 1.534,  // s for shoulder
+	sX2: 0.02,
+	sY2: 0.01,
+	eX2: 0.03,  // e for elbow
+
+  lZ: 0.01,  // l for leg
+	lX: 0.02,
+	lY: 0.01,
+	kX: 0.03,  // k for knee
+
+  lZ2: 0.506,  // l for leg
+	lX2: -0.203,
+	lY2: -0.203,
+	kX2: 0.03,  // k for knee
+
+	posY: 0.01,
+  posX: 20
+
+};
+var keys = [
+  [0, p0],
+  [0.125, p1],
+  [0.25, p0],
+  [0.375, p2],
+  [0.5, p0],
+  [0.625, p3],
+  [0.75, p0],
+  [0.875,p4],
+  [1, p0]
+];
+
+var T = 4;
+var clock = new THREE.Clock();
+var ts = clock.getElapsedTime()
+var intKey =[];
+
+init();
+animate();
+
+function buildBody () {
+
+	var body = new THREE.Object3D();
+soundTrack = document.getElementById ('soundtrack');
+	let boxGeometry;
+	boxGeometry = new THREE.BoxGeometry(30, 50, 20);
+  let torso = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({
+      color: 0xf00078
+  }));
+  torso.position.set(0, 50, 0);
+  body.add(torso);
+
+  let arm;
+  upperArm = new THREE.Object3D();
+  boxGeometry = new THREE.BoxGeometry(10, 20, 10);
+  arm = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({
+      color: 0xff0080
+  }));
+  upperArm.add(arm);
+  arm.position.set(-5, -10, 0);
+  body.add(upperArm);
+  upperArm.position.set(-15, 70, 0);
+
+  lowerArm = new THREE.Object3D();
+  boxGeometry = new THREE.BoxGeometry(10, 30, 10);
+  arm = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({
+      color: 0xff359a
+  }));
+  lowerArm.add(arm);
+  arm.position.set(-5, -15, 0);
+  lowerArm.position.set(0, -20, 0);
+  upperArm.add(lowerArm);
+
+  let arm2;
+  upperArm2 = new THREE.Object3D();
+  boxGeometry = new THREE.BoxGeometry(10, 20, 10);
+  arm2 = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({
+      color: 0xff60af
+  }));
+  //arm2.rotation.y=Math.PI/2
+  upperArm2.add(arm2);
+  arm2.position.set(5, -10, 0);
+  body.add(upperArm2);
+  upperArm2.position.set(15, 70, 0);
+
+  lowerArm2 = new THREE.Object3D();
+  boxGeometry = new THREE.BoxGeometry(10, 30, 10);
+  arm2 = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({
+      color: 0xff79bc
+  }));
+  lowerArm2.add(arm2);
+  arm2.position.set(0, -15, 0);
+  lowerArm2.position.set(5, -20, 0);
+  upperArm2.add(lowerArm2);
+
+
+
+  let leg;
+  upperLeg = new THREE.Object3D();
+  boxGeometry = new THREE.BoxGeometry(10, 20, 10);
+  leg = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({
+      color: 0xff95ca
+  }));
+  upperLeg.add(leg);
+  leg.position.set(-5, -10, 0);
+  body.add(upperLeg);
+  upperLeg.position.set(-5, 25, 0);
+
+  lowerLeg = new THREE.Object3D();
+  boxGeometry = new THREE.BoxGeometry(10, 30, 10);
+  leg = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({
+      color: 0xffaad5
+  }));
+  lowerLeg.add(leg);
+  leg.position.set(-5, -15, 0);
+  lowerLeg.position.set(0, -20, 0);
+  upperLeg.add(lowerLeg);
+
+  let leg2;
+  upperLeg2 = new THREE.Object3D();
+  boxGeometry = new THREE.BoxGeometry(10, 20, 10);
+  leg2 = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({
+      color: 0xffc1e0
+  }));
+  upperLeg2.add(leg2);
+  leg2.position.set(-5, -10, 0);
+  body.add(upperLeg2);
+  upperLeg2.position.set(15, 25, 0);
+
+  lowerLeg2 = new THREE.Object3D();
+  boxGeometry = new THREE.BoxGeometry(10, 30, 10);
+  leg2 = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({
+      color: 0xffd9ec
+  }));
+  lowerLeg2.add(leg2);
+  leg2.position.set(-5, -15, 0);
+  lowerLeg2.position.set(0, -20, 0);
+  upperLeg2.add(lowerLeg2);
+
+  let top;
+  head = new THREE.Object3D();
+  boxGeometry = new THREE.BoxGeometry(25, 20, 15);
+  top = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({
+      color: 0xd9006c
+  }));
+  head.add(top);
+  top.position.set(0, 85, 0);
+  body.add(head);
+  head.position.set(0,0, 0);
+
+
+	return body;
+}
+
+function init() {
+
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+
+  renderer = new THREE.WebGLRenderer({
+    antialias: true
+  });
+  renderer.setSize(width, height);
+  renderer.setClearColor(0x888888);
+
+  document.body.appendChild(renderer.domElement);
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 10000);
+  camera.position.y = 160;
+  camera.position.z = 400;
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  scene.add(camera);
+  var ambientLight = new THREE.AmbientLight(0x999999);
+    scene.add(ambientLight);
+    light1 = new THREE.SpotLight(0xffffff, 1);
+    light1.position.set(0, 500, 50);
+    scene.add(light1);
+
+  let controls = new THREE.OrbitControls(camera, renderer.domElement);
+ 	let gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
+  scene.add(gridXZ);
+
+  window.addEventListener('resize', onWindowResize, false);
+	/////////////////////////////////////////////////////////////////////////////
+  body = buildBody ();
+  body.position.y+= 25
+  scene.add (body)
+
+  //body.position.set(0, 0, -35);
+
+  var gui = new dat.GUI();
+  gui.add (gcontrols, 'sZ', -3.2, 0);
+  gui.add (gcontrols, 'sX', -3.2, 3.2);
+  gui.add (gcontrols, 'sY', -3.2, 3.2);
+  gui.add (gcontrols, 'eX', -3, 0);
+  gui.add (gcontrols, 'posY', 0, 20);
+  gui.add (gcontrols, 'sZ2', -3.2, 3);
+  gui.add (gcontrols, 'sX2', -3.2, 3.2);
+  gui.add (gcontrols, 'sY2', -3.2, 3.2);
+  gui.add (gcontrols, 'eX2', -3, 0);
+  ///////leg
+  gui.add (gcontrols, 'lZ', -3.2, 0);
+  gui.add (gcontrols, 'lX', -3.2, 3.2);
+  gui.add (gcontrols, 'lY', -3.2, 3.2);
+  gui.add (gcontrols, 'kX', 0, 3);
+
+  gui.add (gcontrols, 'lZ2', -3.2, 0);
+  gui.add (gcontrols, 'lX2', -3.2, 3.2);
+  gui.add (gcontrols, 'lY2', -3.2, 3.2);
+  gui.add (gcontrols, 'kX2', 0, 3);
+  gui.add (gcontrols, 'posY', 0, 20);
+  gui.add (gcontrols, 'posX', -20, 20);
+
+
+}
+
+
+function animate() {
+keyframe (clock.getElapsedTime())
+  requestAnimationFrame(animate);
+  render();
+}
+
+function keyframe(t) {
+  var s = ((t - ts) % T) / T;
+  for (var i = 1; i < keys.length; i++) {
+    if (keys[i][0] > s) break;
+  }
+  // take i-1
+  var ii = i - 1;
+  var a = (s - keys[ii][0]) / (keys[ii + 1][0] - keys[ii][0]);
+  console.log (a)
+  intKey = [
+  	keys[ii][1].sZ * (1 - a) + keys[ii + 1][1].sZ * a,
+    keys[ii][1].sX * (1 - a) + keys[ii + 1][1].sX * a,
+    keys[ii][1].sY * (1 - a) + keys[ii + 1][1].sY * a,
+    keys[ii][1].eX * (1 - a) + keys[ii + 1][1].eX * a,
+
+    keys[ii][1].sZ2 * (1 - a) + keys[ii + 1][1].sZ2 * a,
+    keys[ii][1].sX2 * (1 - a) + keys[ii + 1][1].sX2 * a,
+    keys[ii][1].sY2 * (1 - a) + keys[ii + 1][1].sY2 * a,
+    keys[ii][1].eX2 * (1 - a) + keys[ii + 1][1].eX2 * a,
+
+    keys[ii][1].lZ * (1 - a) + keys[ii + 1][1].lZ * a,
+    keys[ii][1].lX * (1 - a) + keys[ii + 1][1].lX * a,
+    keys[ii][1].lY * (1 - a) + keys[ii + 1][1].lY * a,
+    keys[ii][1].kX * (1 - a) + keys[ii + 1][1].kX * a,
+
+    keys[ii][1].lZ2 * (1 - a) + keys[ii + 1][1].lZ2 * a,
+    keys[ii][1].lX2 * (1 - a) + keys[ii + 1][1].lX2 * a,
+    keys[ii][1].lY2 * (1 - a) + keys[ii + 1][1].lY2 * a,
+    keys[ii][1].kX2 * (1 - a) + keys[ii + 1][1].kX2 * a,
+    keys[ii][1].posY * (1 - a) + keys[ii + 1][1].posY * a,
+keys[ii][1].posX * (1 - a) + keys[ii + 1][1].posX * a,
+
+  ];
+}
+
+function onWindowResize() {
+  var width = window.innerWidth,
+    height = window.innerHeight;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+}
+
+
+function render() {
+/*
+	upperArm.rotation.z = gcontrols.sZ//theta1; //-Math.PI/6;//theta1;
+  upperArm.rotation.y = gcontrols.sY//theta2; //-Math.PI/3;//theta2;
+  upperArm.rotation.x = gcontrols.sX//theta2; //-Math.PI/3;//theta2;
+  upperArm.rotation.order = 'ZXY';
+
+  upperArm2.rotation.z = gcontrols.sZ2//theta1; //-Math.PI/6;//theta1;
+  upperArm2.rotation.y = gcontrols.sY2//theta2; //-Math.PI/3;//theta2;
+  upperArm2.rotation.x = gcontrols.sX2//theta2; //-Math.PI/3;//theta2;
+  upperArm2.rotation.order = 'ZXY';
+
+  upperLeg.rotation.z = gcontrols.lZ//theta1; //-Math.PI/6;//theta1;
+  upperLeg.rotation.y = gcontrols.lY//theta2; //-Math.PI/3;//theta2;
+  upperLeg.rotation.x = gcontrols.lX//theta2; //-Math.PI/3;//theta2;
+  upperLeg.rotation.order = 'ZXY';
+
+  upperLeg2.rotation.z = gcontrols.lZ2//theta1; //-Math.PI/6;//theta1;
+  upperLeg2.rotation.y = gcontrols.lY2//theta2; //-Math.PI/3;//theta2;
+  upperLeg2.rotation.x = gcontrols.lX2//theta2; //-Math.PI/3;//theta2;
+  upperLeg2.rotation.order = 'ZXY';
+
+  lowerArm.rotation.x = gcontrols.eX//theta3; //-Math.PI/4;//theta3;
+  lowerArm2.rotation.x = gcontrols.eX2//theta3; //-Math.PI/4;//theta3;
+  lowerLeg.rotation.x = gcontrols.kX
+	lowerLeg2.rotation.x = gcontrols.kX2
+ // body.position.y = gcontrols.posY;
+  body.position.x = gcontrols.posX;*/
+
+
+	upperArm.rotation.z = intKey[0]//theta1; //-Math.PI/6;//theta1;
+  upperArm.rotation.y = intKey[1]//theta2; //-Math.PI/3;//theta2;
+  upperArm.rotation.x = intKey[2]//theta2; //-Math.PI/3;//theta2;
+  upperArm.rotation.order = 'ZXY';
+  lowerArm.rotation.x = intKey[3]//theta3; //-Math.PI/4;//theta3;
+  //upperLeg.rotation.z = intKey[6]
+  ////////////////////left
+	upperArm2.rotation.z = intKey[4]//theta1; //-Math.PI/6;//theta1;
+  upperArm2.rotation.y = intKey[5]//theta2; //-Math.PI/3;//theta2;
+  upperArm2.rotation.x = intKey[6]//theta2; //-Math.PI/3;//theta2;
+  upperArm2.rotation.order = 'ZXY';
+  lowerArm2.rotation.x = intKey[7]
+
+  upperLeg.rotation.z = intKey[8]//theta1; //-Math.PI/6;//theta1;
+  upperLeg.rotation.y = intKey[9]//theta2; //-Math.PI/3;//theta2;
+  upperLeg.rotation.x = intKey[10]//theta2; //-Math.PI/3;//theta2;
+  upperLeg.rotation.order = 'ZXY';
+  lowerLeg.rotation.x = intKey[11]//theta3; //-
+
+  upperLeg2.rotation.z = intKey[12]//theta1; //-Math.PI/6;//theta1;
+  upperLeg2.rotation.y = intKey[13]//theta2; //-Math.PI/3;//theta2;
+  upperLeg2.rotation.x = intKey[14]//theta2; //-Math.PI/3;//theta2;
+  upperLeg2.rotation.order = 'ZXY';
+  lowerLeg2.rotation.x = intKey[15]
+
+  //theta3; //-Math.PI/4;//theta3;
+
+  //lupperLeg.rotation.z = -intKey[7]
+  //body.position.y = intKey[4];
+  body.position.x = intKey[17];
+  renderer.render(scene, camera);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+
+</html>
